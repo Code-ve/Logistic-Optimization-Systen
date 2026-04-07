@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description"
+        content="OptiGuide — AI-powered logistics route optimization and what-if scenario analysis platform">
+    <title>OptiGuide | Logistics Intelligence Platform</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;600;700;800&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+    <link rel="stylesheet" href="style.css">
+
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+
+<body>
+
+    <div class="app-shell">
+
+        <!-- ══════════════ TOP BAR ══════════════ -->
+        <header class="top-bar">
+            <div class="topbar-brand">
+                <div class="brand-icon"><i data-lucide="cpu"></i></div>
+                <div class="brand-text">
+                    <span class="brand-name">OptiGuide</span>
+                    <span class="brand-sub">Logistics Intelligence Platform</span>
+                </div>
+            </div>
+
+            <div class="topbar-kpis">
+                <div class="kpi-chip">
+                    <i data-lucide="dollar-sign"></i>
+                    <div><span>Optimal Cost</span><strong id="val-cost">—</strong></div>
+                </div>
+                <div class="kpi-chip">
+                    <i data-lucide="trending-down"></i>
+                    <div><span>Savings</span><strong id="val-gain">—</strong></div>
+                </div>
+                <div class="kpi-chip">
+                    <i data-lucide="git-branch"></i>
+                    <div><span>Active Routes</span><strong id="val-routes">—</strong></div>
+                </div>
+                <div class="kpi-chip">
+                    <i data-lucide="layers"></i>
+                    <div><span>Scenarios Run</span><strong id="val-scenarios">0</strong></div>
+                </div>
+            </div>
+
+            <div class="topbar-status">
+                <div class="status-pill" id="pill-backend">
+                    <span class="dot" id="dot-backend"></span>
+                    <span id="pill-backend-text">Connecting…</span>
+                </div>
+                <div class="status-pill" id="pill-apikey">
+                    <i data-lucide="key" style="width:13px;height:13px"></i>
+                    <span id="pill-apikey-text">API Key…</span>
+                </div>
+            </div>
+        </header>
+
+        <!-- ══════════════ 3-COLUMN LAYOUT ══════════════ -->
+        <div class="main-layout">
+
+            <!-- ══ LEFT: INPUT PANEL ══ -->
+            <aside class="side-panel left-panel" id="left-panel">
+                <div class="panel-head">
+                    <span class="panel-title"><i data-lucide="sliders"></i> Network Parameters</span>
+                    <span class="badge badge-blue">Configure</span>
+                </div>
+                <div class="panel-scroll">
+
+                    <!-- Supplier Capacity -->
+                    <div class="param-block">
+                        <div class="param-block-title"><i data-lucide="package"></i> Supplier Capacity</div>
+
+                        <div class="slider-field">
+                            <div class="slider-label"><span>Supplier 1 <em>delhi</em></span><strong
+                                    id="lbl-s1">150</strong></div>
+                            <input type="range" id="cap-s1" class="slider" min="50" max="300" value="150"
+                                oninput="document.getElementById('lbl-s1').textContent=this.value">
+                        </div>
+                        <div class="slider-field">
+                            <div class="slider-label"><span>Supplier 2 <em>mumbai</em></span><strong
+                                    id="lbl-s2">50</strong></div>
+                            <input type="range" id="cap-s2" class="slider" min="20" max="200" value="50"
+                                oninput="document.getElementById('lbl-s2').textContent=this.value">
+                        </div>
+                        <div class="slider-field">
+                            <div class="slider-label"><span>Supplier 3 <em>kolkata</em></span><strong
+                                    id="lbl-s3">100</strong></div>
+                            <input type="range" id="cap-s3" class="slider" min="20" max="250" value="100"
+                                oninput="document.getElementById('lbl-s3').textContent=this.value">
+                        </div>
+                    </div>
+
+                    <!-- Cafe Demand -->
+                    <div class="param-block">
+                        <div class="param-block-title"><i data-lucide="coffee"></i> Cafe Demand (Light / Dark)</div>
+                        <div class="demand-row">
+                            <label>Cafe 1 <em>Chennai</em></label>
+                            <div class="demand-inputs">
+                                <input type="number" id="d-c1l" value="20" min="0" max="200" placeholder="Light">
+                                <input type="number" id="d-c1d" value="20" min="0" max="200" placeholder="Dark">
+                            </div>
+                        </div>
+                        <div class="demand-row">
+                            <label>Cafe 2 <em>Pune</em></label>
+                            <div class="demand-inputs">
+                                <input type="number" id="d-c2l" value="30" min="0" max="200" placeholder="Light">
+                                <input type="number" id="d-c2d" value="20" min="0" max="200" placeholder="Dark">
+                            </div>
+                        </div>
+                        <div class="demand-row">
+                            <label>Cafe 3 <em>Ahmedabad</em></label>
+                            <div class="demand-inputs">
+                                <input type="number" id="d-c3l" value="40" min="0" max="300" placeholder="Light">
+                                <input type="number" id="d-c3d" value="100" min="0" max="300" placeholder="Dark">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Cost Multipliers -->
+                    <div class="param-block">
+                        <div class="param-block-title"><i data-lucide="truck"></i> Cost Multipliers</div>
+                        <div class="slider-field">
+                            <div class="slider-label"><span>Shipping Factor</span><strong id="lbl-ship">1.0×</strong>
+                            </div>
+                            <input type="range" id="mult-ship" class="slider" min="0.5" max="3.0" step="0.1" value="1.0"
+                                oninput="document.getElementById('lbl-ship').textContent=parseFloat(this.value).toFixed(1)+'×'">
+                        </div>
+                        <div class="slider-field">
+                            <div class="slider-label"><span>Roasting Factor</span><strong id="lbl-roast">1.0×</strong>
+                            </div>
+                            <input type="range" id="mult-roast" class="slider" min="0.5" max="3.0" step="0.1"
+                                value="1.0"
+                                oninput="document.getElementById('lbl-roast').textContent=parseFloat(this.value).toFixed(1)+'×'">
+                        </div>
+                    </div>
+
+                    <!-- Presets -->
+                    <div class="param-block">
+                        <div class="param-block-title"><i data-lucide="bookmark"></i> Quick Presets</div>
+                        <div class="preset-grid">
+                            <button class="preset-btn" id="pre-baseline">📊 Baseline</button>
+                            <button class="preset-btn" id="pre-high">📈 High Demand</button>
+                            <button class="preset-btn" id="pre-shock">💥 Cost Shock</button>
+                            <button class="preset-btn" id="pre-cut">✂️ Cap Cut</button>
+                        </div>
+                    </div>
+
+                    <!-- Optimize -->
+                    <button class="optimize-btn" id="optimize-btn">
+                        <i data-lucide="zap"></i> Run Optimization
+                    </button>
+                    <p class="optimize-hint">Adjust parameters above, then optimize</p>
+
+                </div>
+            </aside>
+
+            <!-- ══ CENTER: MAP + ANALYSIS ══ -->
+            <main class="center-panel">
+
+                <!-- Map -->
+                <div class="map-card glass">
+                    <div class="map-header">
+                        <div>
+                            <h3><i data-lucide="map"></i> Optimized Route Flow</h3>
+                            <p id="map-subtitle">Run optimization to see live routes</p>
+                        </div>
+                        <div class="map-legend">
+                            <span><span class="ldot supplier"></span>Supplier</span>
+                            <span><span class="ldot roastery"></span>Roastery</span>
+                            <span><span class="ldot cafe"></span>Cafe</span>
+                            <span><span class="lline"></span>Active Route</span>
+                        </div>
+                    </div>
+                    <div id="map"></div>
+                </div>
+
+                <!-- Analysis Row -->
+                <div class="analysis-row">
+
+                    <!-- Cost Breakdown -->
+                    <div class="glass a-card">
+                        <h4 class="card-title"><i data-lucide="pie-chart"></i> Cost Breakdown</h4>
+                        <div class="chart-wrap"><canvas id="cost-chart"></canvas></div>
+                        <div class="breakdown-legend">
+                            <div><span class="bd-dot" style="background:#3b82f6"></span>Shipping<strong
+                                    id="bv-ship">—</strong></div>
+                            <div><span class="bd-dot" style="background:#06b6d4"></span>Roasting<strong
+                                    id="bv-roast">—</strong></div>
+                            <div><span class="bd-dot" style="background:#f59e0b"></span>Management<strong
+                                    id="bv-mgmt">—</strong></div>
+                        </div>
+                    </div>
+
+                    <!-- Route Table -->
+                    <div class="glass a-card routes-card">
+                        <h4 class="card-title"><i data-lucide="git-branch"></i> Active Routes</h4>
+                        <div class="table-wrap">
+                            <table id="routes-table">
+                                <thead>
+                                    <tr>
+                                        <th>From</th>
+                                        <th>To</th>
+                                        <th>Vol</th>
+                                        <th>Cost</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="routes-tbody">
+                                    <tr class="empty-tr">
+                                        <td colspan="4">Run optimization to see routes</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                </div>
+            </main>
+
+            <!-- ══ RIGHT: WHAT-IF SCENARIOS PANEL ══ -->
+            <aside class="side-panel right-panel" id="right-panel">
+                <div class="panel-head">
+                    <span class="panel-title"><i data-lucide="flask-conical"></i> What-If Scenarios</span>
+                    <span class="badge badge-purple" id="sc-count">0 runs</span>
+                </div>
+                <div class="panel-scroll">
+
+                    <!-- AI Query -->
+                    <div class="query-box">
+                        <div class="query-label"><i data-lucide="sparkles"></i> Ask OptiGuide AI</div>
+                        <textarea id="scenario-input" rows="3"
+                            placeholder="e.g. What if Supplier 1 capacity increases to 200?"></textarea>
+                        <button class="analyze-btn" id="scenario-btn">
+                            <i data-lucide="send"></i> Analyze Scenario
+                        </button>
+                    </div>
+
+                    <!-- Ad-hoc Routing -->
+                    <div class="query-box" style="margin-top:16px;">
+                        <div class="query-label"><i data-lucide="map-pin"></i> Point-to-Point Route</div>
+                        <div style="display:flex; gap:8px; margin-bottom:8px;">
+                            <style>
+                                .dropdown-sel {
+                                    flex: 1;
+                                    background: rgba(0, 0, 0, 0.2);
+                                    border: 1px solid rgba(255, 255, 255, 0.1);
+                                    border-radius: 6px;
+                                    color: #fff;
+                                    padding: 6px 10px;
+                                    font-size: 13px;
+                                    outline: none;
+                                }
+
+                                .dropdown-sel option,
+                                .dropdown-sel optgroup {
+                                    background: #1e293b;
+                                    color: #fff;
+                                }
+
+                                .route-vol {
+                                    width: 65px;
+                                    background: rgba(0, 0, 0, 0.2);
+                                    border: 1px solid rgba(255, 255, 255, 0.1);
+                                    border-radius: 6px;
+                                    color: #fff;
+                                    padding: 6px;
+                                    font-size: 13px;
+                                    outline: none;
+                                }
+                            </style>
+                            <select id="route-from" class="dropdown-sel">
+                                <option value="">From...</option>
+                                <optgroup label="Suppliers">
+                                    <option value="Supplier 1 (Delhi)">Supplier 1 (Delhi)</option>
+                                    <option value="Supplier 2 (Mumbai)">Supplier 2 (Mumbai)</option>
+                                    <option value="Supplier 3 (Kolkata)">Supplier 3 (Kolkata)</option>
+                                </optgroup>
+                                <optgroup label="Roasteries">
+                                    <option value="Roastery 1 (Bengaluru)">Roastery 1 (Bengaluru)</option>
+                                    <option value="Roastery 2 (Hyderabad)">Roastery 2 (Hyderabad)</option>
+                                </optgroup>
+                            </select>
+                            <select id="route-to" class="dropdown-sel">
+                                <option value="">To...</option>
+                                <optgroup label="Roasteries">
+                                    <option value="Roastery 1 (Bengaluru)">Roastery 1 (Bengaluru)</option>
+                                    <option value="Roastery 2 (Hyderabad)">Roastery 2 (Hyderabad)</option>
+                                </optgroup>
+                                <optgroup label="Cafes">
+                                    <option value="Cafe 1 (Chennai)">Cafe 1 (Chennai)</option>
+                                    <option value="Cafe 2 (Pune)">Cafe 2 (Pune)</option>
+                                    <option value="Cafe 3 (Ahmedabad)">Cafe 3 (Ahmedabad)</option>
+                                </optgroup>
+                            </select>
+                        </div>
+                        <div style="display:flex; gap:8px;">
+                            <input type="number" id="route-vol" class="route-vol" placeholder="Vol" min="1" value="50">
+                            <button class="analyze-btn" id="calc-route-btn"
+                                style="flex:1; background:#06b6d4; border-color:#0891b2;">
+                                <i data-lucide="calculator"></i> Calculate Route
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Templates -->
+                    <div class="template-section">
+                        <p class="template-label">Quick templates</p>
+                        <div class="template-chips">
+                            <button class="t-chip" id="tpl1">Supplier 1 capacity +50%</button>
+                            <button class="t-chip" id="tpl2">Shipping costs doubled</button>
+                            <button class="t-chip" id="tpl3">Cafe 3 demand doubled</button>
+                            <button class="t-chip" id="tpl4">Consolidate at Roastery 1</button>
+                        </div>
+                    </div>
+
+                    <!-- Scenario List -->
+                    <div class="sc-list-header">
+                        <span>Scenario History</span>
+                        <button class="clear-btn" id="clear-btn">Clear all</button>
+                    </div>
+                    <div class="sc-list" id="sc-list">
+                        <div class="empty-state" id="sc-empty">
+                            <i data-lucide="layers"></i>
+                            <p>No scenarios yet.<br>Run an analysis above.</p>
+                        </div>
+                    </div>
+
+                    <!-- Services -->
+                    <div class="services-block">
+                        <div class="services-title"><i data-lucide="box"></i> Available Services</div>
+                        <div id="services-list">
+                            <div class="loading-svc">Loading services…</div>
+                        </div>
+                    </div>
+
+                </div>
+            </aside>
+
+        </div><!-- end main-layout -->
+    </div><!-- end app-shell -->
+
+    <!-- Loading Overlay -->
+    <div class="loading-overlay" id="loading-overlay">
+        <div class="loading-box">
+            <div class="spinner"></div>
+            <p id="loading-text">Running optimization…</p>
+        </div>
+    </div>
+
+    <script src="components.js"></script>
+    <script src="app.js"></script>
+    <script>lucide.createIcons();</script>
+</body>
+
+</html>
