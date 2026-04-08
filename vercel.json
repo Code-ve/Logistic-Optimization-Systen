@@ -1,22 +1,9 @@
 {
-  "builds": [
-    {
-      "src": "backend/main.py",
-      "use": "@vercel/python"
-    },
-    {
-      "src": "frontend/**",
-      "use": "@vercel/static"
-    }
-  ],
-  "routes": [
-    {
-      "src": "/(optimize|health|api-check|services)",
-      "dest": "backend/main.py"
-    },
-    {
-      "src": "/(.*)",
-      "dest": "frontend/$1"
-    }
+  "rewrites": [
+    { "source": "/optimize", "destination": "/api/index.py" },
+    { "source": "/health", "destination": "/api/index.py" },
+    { "source": "/api-check", "destination": "/api/index.py" },
+    { "source": "/services", "destination": "/api/index.py" },
+    { "source": "/(.*)", "destination": "/frontend/$1" }
   ]
 }
