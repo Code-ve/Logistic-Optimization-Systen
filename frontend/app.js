@@ -5,7 +5,7 @@
 document.addEventListener('DOMContentLoaded', () => {
 
     /* ═══ CONSTANTS ══════════════════════════════════════════ */
-    const API = 'http://localhost:8000';
+    const API = '';  // relative — works on any host (localhost or Render)
 
     const NODES = {
         supplier1: { coords: [28.6139, 77.2090], type: 'supplier', label: 'Supplier 1 (Delhi)' },

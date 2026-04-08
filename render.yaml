@@ -1,0 +1,16 @@
+# render.yaml — Render Blueprint (Infrastructure as Code)
+# Deploy by connecting your GitHub repo → Render auto-detects this file.
+
+services:
+  - type: web
+    name: optiguide-logistics
+    runtime: python
+    buildCommand: bash build.sh
+    startCommand: cd backend && gunicorn main:app --workers 2 --worker-class uvicorn.workers.UvicornWorker --bind 0.0.0.0:$PORT
+    envVars:
+      - key: MOCK_MODE
+        value: "true"
+      - key: OPENAI_API_KEY
+        sync: false  # Render will prompt you to set this manually
+      - key: PYTHON_VERSION
+        value: "3.11.11"
