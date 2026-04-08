@@ -6,7 +6,7 @@ services:
     name: optiguide-logistics
     runtime: python
     buildCommand: bash build.sh
-    startCommand: cd backend && gunicorn main:app --workers 2 --worker-class uvicorn.workers.UvicornWorker --bind 0.0.0.0:$PORT
+    startCommand: cd backend && gunicorn main:app --workers 1 --threads 4 --worker-class uvicorn.workers.UvicornWorker --bind 0.0.0.0:$PORT
     envVars:
       - key: MOCK_MODE
         value: "true"
