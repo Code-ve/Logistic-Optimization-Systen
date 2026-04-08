@@ -36,7 +36,9 @@ def optimize(request: OptimizationRequest):
         result = process_optimization_query(request.question, request.params or {})
         return result
     except Exception as e:
-        return {"error": f"Internal Server Error: {str(e)}", "cost": None, "routes": [], "breakdown": {}}
+        import traceback
+        err_str = traceback.format_exc()
+        return {"error": f"Internal Server Error: {err_str}", "cost": None, "routes": [], "breakdown": {}}
 
 @app.get("/health")
 def health_check():
