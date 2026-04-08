@@ -84,5 +84,4 @@ def get_services():
 
 frontend_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "frontend")
 if os.path.isdir(frontend_dir):
-    sys.stdout.write("Mounting frontend directory...\n")
     app.mount("/", StaticFiles(directory=frontend_dir, html=True), name="frontend")
